@@ -15,6 +15,8 @@ jobs:
           node-version: '22'
       - name: Check JavaScript syntax
         run: node --check app.js
+      - name: Verify DOM to JavaScript selector contract
+        run: node tests/dom-contract.mjs
       - name: Verify application entry points
         run: |
           test -s index.html
