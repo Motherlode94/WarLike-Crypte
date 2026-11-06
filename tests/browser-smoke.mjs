@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ headless:true });
+const page = await browser.newPage({ acceptDownloads:true });
+const errors=[];page.on('pageerror',e=>errors.push(e.message));
+try {
+ await page.goto('http://127.0.0.1:8765/',{waitUntil:'load'});
+ await page.locator('#master').fill('WarLike-Phrase-De-Test-2026!');
+ await page.locator('#masterConfirm').fill('WarLike-Phrase-De-Test-2026!');
+ await page.locator('#unlockButton').click();
+ await page.locator('#unlocked').waitFor({state:'visible'});
+ assert.match(await page.locator('#status').innerText(),/déverrouillé/);
+ await page.locator('#itemTitle').fill('Service de test');
+ await page.locator('#itemUser').fill('test@example.org');
+ await page.locator('#itemPassword').fill('Secret-Doit-Rester-Chiffre-123');
+ await page.locator('#entryForm button[type="submit"]').click();
+ await page.waitForFunction(()=>document.querySelector('#saveError')?.textContent?.includes('Enregistré'));
+ const stored=await page.evaluate(()=>localStorage.getItem('warlike.crypte.local.v1'));
+ assert.ok(stored,'encrypted vault must be persisted');
+ assert.ok(!stored.includes('Secret-Doit-Rester-Chiffre-123'),'plaintext secret leaked to storage');
+ assert.ok(!stored.includes('test@example.org'),'plaintext account leaked to storage');
+ await page.locator('#lock').click();
+ assert.equal(await page.locator('#itemPassword').inputValue(),'','password field must be erased on lock');
+ assert.equal(await page.locator('#itemUser').inputValue(),'','username field must be erased on lock');
+ await page.reload({waitUntil:'load'});
+ await page.locator('#master').fill('WarLike-Phrase-De-Test-2026!');
+ await page.locator('#unlockButton').click();
+ await page.locator('#unlocked').waitFor({state:'visible'});
+ await page.getByRole('button',{name:/Service de test/}).click();
+ assert.equal(await page.locator('#itemPassword').inputValue(),'Secret-Doit-Rester-Chiffre-123');
+ assert.deepEqual(errors,[],'unexpected browser errors');
+ console.log('PASS: encrypted persistence, lock memory hygiene, and unlock round-trip');
+} finally { await browser.close(); }
