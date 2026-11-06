@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const html=readFileSync('index.html','utf8');
+const js=readFileSync('app.js','utf8');
+const ids=[...html.matchAll(/\bid=["']([^"']+)["']/g)].map(x=>x[1]);
+assert.equal(new Set(ids).size,ids.length,'Duplicate HTML id detected');
+const present=new Set(ids);
+const required=[...js.matchAll(/\$\(['"]#([\w-]+)['"]\)/g)].map(x=>x[1]);
+const missing=[...new Set(required.filter(id=>!present.has(id)))];
+assert.deepEqual(missing,[],'Literal JavaScript ID selectors missing from index.html');
+console.log('PASS: '+required.length+' static JS selectors and '+ids.length+' HTML IDs checked');
