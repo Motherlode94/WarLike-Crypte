@@ -6,3 +6,13 @@ dialog::backdrop{background:#02070bc9}
 dialog h2{margin-top:0}
 dialog .toolbar{justify-content:flex-end}
 button:disabled{opacity:.55;cursor:not-allowed}
+
+/* Security UX enhancements */
+.generatorOption{display:inline-flex;align-items:center;gap:8px;margin:0;color:#bfd1d7}
+.generatorOption input:not([type=file]){width:72px;margin:0;padding:9px;text-align:center}
+.strength{display:block;margin:8px 0 0;color:#b8c9d0;font-size:12px}
+.strength[data-level="weak"]{color:#ffb6a8}
+.strength[data-level="medium"]{color:#f4d091}
+.strength[data-level="strong"]{color:#98e0bd}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #9de7e4;outline-offset:3px}
+@media(max-width:700px){.generatorOption{width:100%;justify-content:flex-start}.inline{align-items:stretch}.inline button{white-space:nowrap}}
